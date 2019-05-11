@@ -1,0 +1,223 @@
+[
+    {
+        "id": "612ac047.313a7",
+        "type": "inject",
+        "z": "46a548ee.1f1768",
+        "name": "",
+        "topic": "",
+        "payload": "TESTE",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 230,
+        "y": 220,
+        "wires": [
+            [
+                "af55589e.8d75f8"
+            ]
+        ]
+    },
+    {
+        "id": "af55589e.8d75f8",
+        "type": "mqtt out",
+        "z": "46a548ee.1f1768",
+        "name": "",
+        "topic": "Teste/Recibo",
+        "qos": "",
+        "retain": "",
+        "broker": "d63b242b.34c848",
+        "x": 540,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "ee4f4a32.d0d528",
+        "type": "mqtt in",
+        "z": "46a548ee.1f1768",
+        "name": "",
+        "topic": "status/temp",
+        "qos": "2",
+        "broker": "d63b242b.34c848",
+        "x": 260,
+        "y": 380,
+        "wires": [
+            [
+                "579948f6.4c5dd8",
+                "f3463228.e0e8"
+            ]
+        ]
+    },
+    {
+        "id": "579948f6.4c5dd8",
+        "type": "debug",
+        "z": "46a548ee.1f1768",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 580,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "f3463228.e0e8",
+        "type": "ui_gauge",
+        "z": "46a548ee.1f1768",
+        "name": "",
+        "group": "c26d5e4b.f5bdc",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "",
+        "label": "",
+        "format": "{{value}}ºC",
+        "min": "-10",
+        "max": "40",
+        "colors": [
+            "#0080ff",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 580,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "92f0e54f.661708",
+        "type": "mqtt in",
+        "z": "46a548ee.1f1768",
+        "name": "",
+        "topic": "status/umi",
+        "qos": "2",
+        "broker": "d63b242b.34c848",
+        "x": 340,
+        "y": 640,
+        "wires": [
+            [
+                "9bcea693.987488"
+            ]
+        ]
+    },
+    {
+        "id": "9bcea693.987488",
+        "type": "ui_gauge",
+        "z": "46a548ee.1f1768",
+        "name": "",
+        "group": "2d83de62.6e54e2",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "",
+        "label": "",
+        "format": "{{value}}%",
+        "min": "0",
+        "max": "100",
+        "colors": [
+            "#ffffff",
+            "#00ffff",
+            "#0080ff"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 630,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "d779562c.ae5528",
+        "type": "ui_text",
+        "z": "46a548ee.1f1768",
+        "group": "9be29d7c.289fc",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "x": 640,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "f34d3cf2.82f6a",
+        "type": "mqtt in",
+        "z": "46a548ee.1f1768",
+        "name": "",
+        "topic": "status/sensor",
+        "qos": "2",
+        "broker": "d63b242b.34c848",
+        "x": 350,
+        "y": 760,
+        "wires": [
+            [
+                "d779562c.ae5528"
+            ]
+        ]
+    },
+    {
+        "id": "d63b242b.34c848",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "local",
+        "broker": "192.168.0.6",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": ""
+    },
+    {
+        "id": "c26d5e4b.f5bdc",
+        "type": "ui_group",
+        "z": "",
+        "name": "Temperatura Atual",
+        "tab": "e8e602e7.8459f",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "2d83de62.6e54e2",
+        "type": "ui_group",
+        "z": "",
+        "name": "Umidade Atual",
+        "tab": "e8e602e7.8459f",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "9be29d7c.289fc",
+        "type": "ui_group",
+        "z": "",
+        "name": "Status Sensor",
+        "tab": "e8e602e7.8459f",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "e8e602e7.8459f",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Home",
+        "icon": "dashboard"
+    }
+]
