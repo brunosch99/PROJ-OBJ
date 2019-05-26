@@ -1,17 +1,22 @@
+#include <Timing.h>
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 #include "DHT.h"
 
 
+
 const char *ssid =  "Wi-Fi 2";     // replace with your wifi ssid and wpa2 key
 const char *pass =  "canada2016";
 
-#define TOPICO_SUBSCRIBE "Teste/Recibo"     //tópico MQTT de escuta
+Timing timer;
+#define TOPICO_SUBSCRIBE "commands/remote"     //tópico MQTT de escuta
 #define TOPICO_PUBLISH   "Teste/Envio"
 #define TOPICO_ENVIO_TEMP   "status/temp"
 #define TOPICO_ENVIO_UMI   "status/umi"
 #define TOPICO_ENVIO_SENSOR   "status/sensor"
 #define ID_MQTT  "NodeMCU"
+#define TOPICO_TEMP_DESEJADA "commands/temp_desejada"
+#define HABILITAR_CONTROLE "commands/enable_control"
 const char* BROKER_MQTT = "192.168.0.6"; //URL do broker MQTT que se deseja utilizar
 int BROKER_PORT = 1883; // Porta do Broker MQTT
 
@@ -19,6 +24,10 @@ WiFiClient espClient;
 PubSubClient MQTT(espClient);
 
 DHT dht;
+
+float temp_desejada;
+boolean controle_habilitado;
+int temp_ac;
  
 void setup() 
 {
@@ -26,17 +35,17 @@ void setup()
       dht.setup(D1);
       wifi_setup();
       mqtt_setup();
-      if(MQTT.publish(TOPICO_PUBLISH, (char*) "ENVIO")){
-        Serial.println("Envio realizado com sucesso!");   
-      } else{
-        Serial.println("Não foi possível realizar o envio!");
-      }
+      timer.begin(0);
+      controle_habilitado = false;
+      temp_desejada = dht.getTemperature();
+      temp_ac = 20;
 }
  
 void loop() 
 {      
         MQTT.loop();
         envio_temp();
+        mqtt_setup();
 }
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) 
@@ -50,7 +59,14 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
        msg += c;
     }
 
-    Serial.println(msg);
+    if(strcmp(topic,"commands/temp_desejada") == 0){
+      temp_desejada = msg.toFloat();
+    } else if (strcmp(topic, "commands/enable_control") == 0){
+      controle_habilitado = msg == "true";
+    } else if (strcmp(topic, "commands/remote") == 0){
+      controle_remoto(msg);
+    }
+      //Serial.println(msg);
      
 }
 
@@ -83,8 +99,9 @@ void mqtt_setup(){
         if (MQTT.connect(ID_MQTT+i)) 
         {
             Serial.println("Conectado com sucesso ao broker MQTT!");
-            MQTT.subscribe(TOPICO_SUBSCRIBE); 
-            MQTT.subscribe(TOPICO_ENVIO_TEMP); 
+            MQTT.subscribe(TOPICO_SUBSCRIBE);
+            MQTT.subscribe(TOPICO_TEMP_DESEJADA);
+            MQTT.subscribe(HABILITAR_CONTROLE);
         } 
         else
         {
@@ -99,29 +116,56 @@ void mqtt_setup(){
 void envio_temp(){
   float humidity = dht.getHumidity();/* Get humidity value */
   float temperature = dht.getTemperature();/* Get temperature value */
-  Serial.print("Umidade = ");
-  Serial.print(humidity);
-  Serial.print("\t\t");
-  Serial.print("Temperatura = ");
-  Serial.print(temperature);
-  Serial.print("\n");
-  char temp[3];
-  char umi[3];
-  if (isnan(temperature) || isnan(humidity)){
-    Serial.println("Erro no Sensor!");
-    MQTT.publish(TOPICO_ENVIO_SENSOR, (char*) "OFFLINE");
-    } else{
-      MQTT.publish(TOPICO_ENVIO_SENSOR, (char*) "ONLINE");
-    if(MQTT.publish(TOPICO_ENVIO_TEMP, (char*) dtostrf(temperature, 6, 2, temp))){
-          Serial.println("Envio realizado com sucesso!");   
-    } else{
-          Serial.println("Não foi possível realizar o envio!");
-    }
-    if(MQTT.publish(TOPICO_ENVIO_UMI, (char*) dtostrf(humidity, 6, 2, umi))){
-          Serial.println("Envio realizado com sucesso!");   
-    } else{
-          Serial.println("Não foi possível realizar o envio!");
+  controle_temp(temperature);
+  if (!isnan(temperature) && !isnan(humidity)){
+    char temp[3];
+    char umi[3];
+    MQTT.publish(TOPICO_ENVIO_TEMP, (char*) dtostrf(temperature, 6, 2, temp));
+    MQTT.publish(TOPICO_ENVIO_UMI, (char*) dtostrf(humidity, 6, 2, umi));
+  } 
+  //Serial.println(temperature);
+}
+
+void controle_temp(float temp){
+  if(timer.onTimeout(2000)){
+  if(controle_habilitado == true){
+      if(temp > temp_desejada){
+        if(temp_ac > 15){
+          Serial.println("Diminuir Temperatura");
+          temp_ac--;
+        } else{
+          Serial.println("Temperatura mínima do Ar-condicionado atingida!");
+        }
+      } else if(temp < temp_desejada){
+        if(temp_ac < 25){
+          Serial.println("Aumentar Temperatura");
+          temp_ac++;
+        } else{
+          Serial.println("Temperatura máxima do Ar-condicionado atingida!");
+        }
+      }
     }
   }
-  delay(2000);
+}
+
+void controle_remoto(String comando){
+  if(comando.equals("ON")){
+    Serial.println("Ligando Ar-Condicionado");
+  }else if(comando.equals("OFF")){
+    Serial.println("Desligando Ar-Condicionado");
+  } else if(comando.equals("PLUS")){
+    if(temp_ac < 25){
+      Serial.println("Aumentando a Temperatura");
+      temp_ac++;
+    }else{
+      Serial.println("Temperatura máxima do Ar-condicionado atingida!");
+    }
+  } else if(comando.equals("MINUS")){
+    if(temp_ac > 15){
+      Serial.println("Diminuindo a Temperatura");
+      temp_ac--;
+    } else{
+      Serial.println("Temperatura mínima do Ar-condicionado atingida!");
+    }
+  }
 }

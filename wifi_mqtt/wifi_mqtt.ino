@@ -19,11 +19,16 @@ void setup()
 {
       wifi_setup();
       mqtt_setup();
+      if(MQTT.publish(TOPICO_PUBLISH, (char*) "ENVIO")){
+        Serial.println("Envio realizado com sucesso!");   
+      } else{
+        Serial.println("Não foi possível realizar o envio!");
+      }
 }
  
 void loop() 
 {      
-        MQTT.loop();   
+        MQTT.loop();
 }
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) 

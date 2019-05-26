@@ -1,5 +1,5 @@
 #include <IRremote.h>
-const int RECV_PIN = 7;
+const int RECV_PIN = 2;
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 
@@ -8,7 +8,7 @@ void setup(){
   Serial.begin(9600);
   irrecv.enableIRIn();
   irrecv.blink13(true);
-  digitalWrite(4, LOW); 
+  digitalWrite(4, HIGH); 
 }
 
 void loop(){

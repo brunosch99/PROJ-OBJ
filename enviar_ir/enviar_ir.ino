@@ -11,13 +11,16 @@ unsigned int LD[20] = {6000,-1250,1200,-1250,600,-650,600,-1250,600,-650,600,-12
 void setup(){
   irsend.begin(); //INICIALIZA A FUNÇÃO
   Serial.begin(115200); //INICIALIZA A PORTA SERIAL
+  //pinMode(D5, OUTPUT);
+  //digitalWrite(D5, HIGH); 
 }
 void loop(){
     
     char c = Serial.read(); //VARIÁVEL RESPONSÁVEL POR RECEBER O CARACTER DIGITADO NA JANELA SERIAL
     
-        irsend.sendRaw(LD,tamanho,frequencia);  // PARÂMETROS NECESSÁRIOS PARA ENVIO DO SINAL IR
+        irsend.sendNEC(0x4AB0F7B5, 32);
+        irsend.sendNEC(0x49B0F626, 32);
         Serial.println("Comando enviado: Liga / Desliga");
-        delay(1000); // TEMPO(EM MILISEGUNDOS) DE INTERVALO ENTRE UM COMANDO E OUTRO
+        delay(100); // TEMPO(EM MILISEGUNDOS) DE INTERVALO ENTRE UM COMANDO E OUTRO
     
 }
